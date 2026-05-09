@@ -1,13 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Loading...</title>
+const express = require('express');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
-  <!-- Auto Redirect -->
-  <meta http-equiv="refresh" content="0; url=https://gemini.google.com/">
+const app = express();
 
-</head>
-<body>
-  Redirecting to Gemini...
-</body>
-</html>
+app.use('/', createProxyMiddleware({
+  target: 'https://gemini.google.com',
+  changeOrigin: true,
+  followRedirects: true,
+  ws: true,
+}));
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Proxy running');
+});
