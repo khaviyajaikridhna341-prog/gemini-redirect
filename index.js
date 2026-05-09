@@ -9,6 +9,7 @@ app.use('/', createProxyMiddleware({
   followRedirects: true,
   ws: true,
   cookieDomainRewrite: '',
+  pathRewrite: { '^/': '/' },
   on: {
     proxyReq: (proxyReq) => {
       proxyReq.setHeader('Host', 'gemini.google.com');
@@ -18,6 +19,11 @@ app.use('/', createProxyMiddleware({
       proxyReq.removeHeader('x-forwarded-host');
       proxyReq.removeHeader('x-forwarded-proto');
       proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
+      proxyReq.setHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8');
+      proxyReq.setHeader('Accept-Language', 'en-US,en;q=0.5');
+      proxyReq.setHeader('Accept-Encoding', 'gzip, deflate, br');
+      proxyReq.setHeader('Connection', 'keep-alive');
+      proxyReq.setHeader('Upgrade-Insecure-Requests', '1');
     },
     proxyRes: (proxyRes) => {
       delete proxyRes.headers['x-frame-options'];
@@ -31,8 +37,14 @@ app.use('/', createProxyMiddleware({
           c.replace(/Domain=[^;]+;?/gi, '').replace(/Secure;?/gi, '')
         );
       }
+    },
+    error: (err, req, res) => {
+      console.error('Proxy error:', err);
+      res.status(500).send(`Proxy error: ${err.message}`);
     }
   }
 }));
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Proxy running on port', process.env.PORT || 3000);
+});
